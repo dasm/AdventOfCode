@@ -1,65 +1,67 @@
 #!/usr/bin/env python3
-
 import re
-
-with open("input") as file_:
-    lines = file_.read()
 
 
 def hgt(value):
-    value, height = value[:-2], value[-2:]
-    if not value:
+    validate = {
+        'cm': lambda x: 150<=int(x)<=193,
+        'in': lambda x: 59<=int(x)<=76,
+    }
+
+    found = re.match('^(\d{2}in)|(\d{3}cm)', value)
+    if not found:
         return False
 
-    value = int(value)
-    h = {
-        "in": lambda x: 59<=x<=76,
-        "cm": lambda x: 150<=x<=193,
-    }
-    val = h.get(height, False)
-    if val:
-        return val(value)
-    return False
+    value, units = value[:-2], value[-2:]
+    return validate[units](value)
+
+simple = {
+    'byr': lambda x: int(x),
+    'iyr': lambda x: int(x),
+    'eyr': lambda x: int(x),
+    'hgt': True,
+    'hcl': True,
+    'ecl': True,
+    'pid': True,
+}
+
+detailed = {
+    'byr': lambda x: 1920<=int(x)<=2002,
+    'iyr': lambda x: 2010<=int(x)<=2020,
+    'eyr': lambda x: 2020<=int(x)<=2030,
+    'hgt': hgt,
+    'hcl': lambda x: bool(re.match("#[0-9a-f]{6}", x)),
+    'ecl': lambda x: x in ('amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'),
+    'pid': lambda x: bool(re.match("[0-9]{9}", x)),
+}
+
+required = ('byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid')
+
+with open("input") as file_:
+    output = file_.read()
+    lines = output.split("\n\n")
+    lines = [line.replace("\n", " ").split() for line in lines]
+
+simple_passports = []
+detailed_passports = []
+for line in lines:
+    simple_passport = {}
+    detailed_passport = {}
+
+    for element in line:
+        key, value = element.split(":")
+        s = simple.get(key)
+        if s:
+            simple_passport[key] = value
+
+        d = detailed.get(key)
+        if d and d(value):
+            detailed_passport[key] = value
 
 
-validation = dict(
-    byr=lambda x: 1920<=int(x)<=2002,
-    iyr=lambda x: 2010<=int(x)<=2020,
-    eyr=lambda x: 2020<=int(x)<=2030,
-    hgt=hgt,
-    hcl=lambda x: bool(re.match("#[0-9a-f]{6}", x)),
-    ecl=lambda x: x in ("amb", "blu", "brn", "gry", "grn", "hzl", "oth"),
-    pid=lambda x: bool(re.match("[0-9]{9}", x)),
-    cid=lambda x: False,
-)
+    if set(required) <= set(simple_passport.keys()):
+        simple_passports.append(simple_passport)
+    if set(required) <= set(detailed_passport.keys()):
+        detailed_passports.append(detailed_passport)
 
-
-def one():
-    passports = []
-    valid = 0
-    for index, line in enumerate(lines.split("\n\n")):
-        line = line.replace("\n", " ").split()
-
-        if len(line) < 7:
-            continue
-
-        passport_dict = {}
-        valid_fields = 0
-        for data in line:
-            field, value = data.split(":")
-            func = validation.get(field)
-            if func(value):
-                valid_fields += 1
-                passport_dict[field] = value
-            else:
-                print(index, valid_fields)
-                break
-
-        if valid_fields == 7:
-            passports.append(passport_dict)
-            valid += 1
-
-    print("No more than 259")
-    print(len(passports))
-
-one()
+print(len(simple_passports), len(detailed_passports))
