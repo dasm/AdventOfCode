@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-with open('day1') as file_:
+with open('input') as file_:
     results = file_.readlines()
 
 results = sorted(map(int, results))
@@ -36,4 +36,5 @@ def sum_three():
                 right -= 1
             else:
                 left += 1
+sum_two()
 sum_three()
