@@ -32,7 +32,7 @@ detailed = {
     'hgt': hgt,
     'hcl': lambda x: bool(re.match("#[0-9a-f]{6}", x)),
     'ecl': lambda x: x in ('amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'),
-    'pid': lambda x: bool(re.match("[0-9]{9}", x)),
+    'pid': lambda x: bool(re.match("^\d{9}$", x)),
 }
 
 required = ('byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid')
