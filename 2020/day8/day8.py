@@ -3,76 +3,55 @@
 with open("input") as file_:
     opcodes = file_.readlines()
 
-def part1():
+def part1(opcodes):
     acc = 0
 
     index = 0
-    list_of_indexes = []
+    visited = set()
 
-    while index < len(opcodes):
-        if index in list_of_indexes:
-            print('acc', acc)
-            print(list_of_indexes)
-            break
-        list_of_indexes.append(index)
+    while True:
+        if index in visited:
+            return acc, False
+        if index >= len(opcodes):
+            return acc, True
+
+        visited.add(index)
 
         opcode = opcodes[index]
         code, step = opcode.split()
 
-        order = -1 if step.startswith('-') else 1
-        step = int(step[1:])
-        value = order * step
+        value = int(step)
 
         if code == 'nop':
-            pass
+            index += 1
         if code == 'acc':
             acc += value
+            index += 1
         if code == 'jmp':
             index += value
+
+    return acc, True
+
+print(part1(opcodes)[0])
+
+def swap(opcodes, index):
+    if 'nop' in opcodes[index]:
+        opcodes[index] = opcodes[index].replace('nop', 'jmp')
+    elif 'jmp' in opcodes[index]:
+        opcodes[index] = opcodes[index].replace('jmp', 'nop')
+    else:
+        opcodes = []
+    return opcodes
+
+def compute(opcodes):
+    for index in range(len(opcodes)):
+        new_opcodes = swap(opcodes[:], index)
+        if not new_opcodes:
             continue
+        result, ended = part1(new_opcodes)
+        if ended:
+            return result
 
-        index += 1
+    return "Oh no"
 
-opcodes = ["nop +0",
-"acc +1",
-"jmp +4",
-"acc +3",
-"jmp -3",
-"acc -99",
-"acc +1",
-"jmp -4",
-"acc +6",
-]
-
-
-def _part2():
-    acc = 0
-
-    index = 0
-    list_of_indexes = []
-
-    while index < len(opcodes):
-        if index in list_of_indexes:
-            print('broke', acc)
-            break
-        list_of_indexes.append(index)
-
-        opcode = opcodes[index]
-        code, step = opcode.split()
-
-        order = -1 if step.startswith('-') else 1
-        step = int(step[1:])
-        value = order * step
-
-        if code == 'nop':
-            pass
-        if code == 'acc':
-            acc += value
-        if code == 'jmp':
-            index += value
-            continue
-
-        index += 1
-    print("finished", acc)
-
-part1()
+print(compute(opcodes))
