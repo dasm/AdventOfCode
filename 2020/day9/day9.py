@@ -30,16 +30,18 @@ print('part1', answer)
 
 def func2(answer):
     start, end = 0, 1
+    value = numbers[start] + numbers[end]
     while start < end:
-        value = sum(numbers[start:end])
         if value == answer:
             result = numbers[start:end]
             result = sorted(result)
             return result[0] + result[-1]
         elif value > answer:
             start += 1
+            value -= numbers[start-1]
         elif value < answer:
             end += 1
+            value += numbers[end]
     else:
         print("Oh no")
 
