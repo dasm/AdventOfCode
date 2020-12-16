@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from collections import defaultdict
+import copy
 import re
 import sys
 
@@ -39,9 +41,57 @@ def part1(data):
     error_rate, _ = check_values(data['configs'], data['nearby'])
     return sum(error_rate)
 
+def retrieve_order(indexes_dict):
+    sorted_dict = {}
+    while indexes_dict:
+        for index, titles in indexes_dict.items():
+            if len(titles) == 1:
+                title = titles[0]
+                sorted_dict[title] = index
+                break
+        _ = indexes_dict.pop(index)
+        copy_indexes = copy.deepcopy(indexes_dict)
+        for index, titles in copy_indexes.items():
+            if title in titles:
+                titles.remove(title)
+                indexes_dict[index] = titles
+    return sorted_dict
+
+
+def part2(tickets, titles_dict, ticket):
+    locations = []
+    tickets = list(zip(*tickets))
+    locations = defaultdict(list)
+    indexes = defaultdict(list)
+    for title, config in titles_dict.items():
+        first, second = config
+        start1, end1 = first
+        start2, end2 = second
+
+        for index, values in enumerate(tickets):
+            if all([bool(start1<=v<=end1 or start2<=v<=end2) for v in values]):
+                indexes[index].append(title)
+
+    answer = []
+    results = retrieve_order(indexes)
+    for title, index in results.items():
+        if title.startswith("departure"):
+            answer.append(ticket[index])
+
+    result = 1
+    for el in answer:
+        result *= el
+    return result
+
 if __name__ == '__main__':
     filename = sys.argv[1]
     data = load_data(filename)
     answer = part1(data)
     print('part1', answer)
-    _, valid_tickets = check_values(data['configs'], data['nearby'])
+    _, tickets = check_values(data['configs'], data['nearby'])
+    tickets.append(data['ticket'])
+    _ = data.pop('configs')
+    _ = data.pop('nearby')
+    ticket = data.pop('ticket')
+    answer = part2(tickets, data, ticket)
+    print('part2', answer)
