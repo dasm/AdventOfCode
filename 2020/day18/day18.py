@@ -29,8 +29,7 @@ def reverse_polish_notation(line):
         queue.append(stack.pop())
     return queue
 
-def compute(line):
-    rpn = reverse_polish_notation(line)
+def compute(rpn):
     index = 0
     while rpn:
         try:
@@ -47,15 +46,53 @@ def compute(line):
             index = 0
         index += 1
 
-
 def part1(data):
     results = []
     for line in data:
-        result = compute(line)
+        rpn = reverse_polish_notation(line)
+        result = compute(rpn)
         results.append(result)
     return sum(results)
+
+COMP = {"+":2, "*":1}
+def mod_reverse_polish_notation(line):
+    queue = []
+    stack = []
+
+    line = line.replace("(", "( ").replace(")", " )").split()
+
+    for el in line:
+        if el not in ("*", "+", ")", "("):
+            queue.append(int(el))
+        elif el == '(':
+            stack.append(el)
+        elif el == ')':
+            while stack and stack[-1] != "(":
+                queue.append(stack.pop())
+            stack.pop()
+        else:
+            while stack and stack[-1] != "(":
+                tmp = stack[-1]
+                if COMP[tmp] < COMP[el]:
+                    break
+                tmp = stack.pop()
+                queue.append(tmp)
+            stack.append(el)
+    while stack:
+        queue.append(stack.pop())
+    return queue
+
+def part2(data):
+    results = []
+    for line in data:
+        rpn = mod_reverse_polish_notation(line)
+        result = compute(rpn)
+        results.append(result)
+    return sum(results)
+
 
 if __name__ == '__main__':
     filename = sys.argv[1]
     data = load_data(filename)
     print("part1", part1(data))
+    print("part2", part2(data))
